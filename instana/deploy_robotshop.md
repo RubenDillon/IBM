@@ -49,6 +49,12 @@ Configure the virtual machine
 
 10. Fire up some load
 
-       docker compose -f docker-compose.yaml -f docker-compose-load.yaml up
+       sudo docker compose up
+    
+10. Fire up some load
+       
+       
+       sudo docker compose -f docker-compose.yaml -f docker-compose-load.yaml up
+    
 
-11. xxy
+12. xxy
