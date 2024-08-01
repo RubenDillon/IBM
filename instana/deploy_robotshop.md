@@ -42,4 +42,14 @@ Configure the virtual machine
 
        git clone https://github.com/instana/robot-shop.git
 
-8. 
+8. Deploy the application
+
+       sudo docker compose pull
+
+9. Run the application
+
+       sudo docker compose up
+
+10. Fire up some load
+
+       docker compose -f docker-compose.yaml -f docker-compose-load.yaml up
