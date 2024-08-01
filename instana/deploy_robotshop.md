@@ -49,12 +49,14 @@ Configure the virtual machine
 
 10 Open another ssh to the virtual machine and give load to the application using the following
 
-       docker-compose -f docker-compose.yaml -f docker-compose-load.yaml up
+       sudo docker-compose -f docker-compose.yaml -f docker-compose-load.yaml up
 
-11 Then 
-       
-       
-       sudo docker compose -f docker-compose.yaml -f docker-compose-load.yaml up
+11 Then open Instana, go to Settings -> Agents. Then select Install Agents button and finally select the Linux Automatic Installation (One liner)
+
+12 Select the defaults and add the command to automatic start. Copy the line and execute in the virtual machine
     
+13 You could check the status of the agent in the virtual machine and using the Instana UI
 
-12. xxy
+       sudo systemctl status instana-agent.service
+       
+14. Using the Instana UI, you could go to Settings -> Agents and review the Agent Details (you could see the icon with the magnifying glass to select your virtual machine)
