@@ -1,1 +1,28 @@
+# Introduce a problem in the Robotshop application
+
+In this tutorial we will introduce a problem in the Robotshop application
+
+We define the following scenario
+- We have a linux virtual machine (in our case a RHEL 8)
+- We already have a INSTANA tenant
+- We already deploy Instana Agent
+- We already deploy the Robotshop Application
+- We already create an Application perspective
+
+Introduce the problem in the application
+=
+
+1. Connect to the virtual machine using ssh. In our example we have a SSH KEY
+
+       ssh -i pem_ibmcloudvsi_download.pem 169.55.98.38 -p 2223 -l itzuser
+   
+2. Execute the following command to found in which container is deployed the MySQL database
+
+        sudo docker container status
+
+3. Suppose that MySQL is running in the container e40ba7c8ce0b Now run the following command to stop de container
+
+        sudo docker container stop e40ba7c8ce0b
+   
+4. Now wait a couple of seconds and go to the Instana UI -> Applications and select the Application perspective of the application. Now you will start to see Erroneous Calls and a new EVENT
 
