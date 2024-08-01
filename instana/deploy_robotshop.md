@@ -47,11 +47,11 @@ Configure the virtual machine
 
        sudo docker compose up
 
-10. Fire up some load
+10 Open another ssh to the virtual machine and give load to the application using the following
 
-       sudo docker compose up
-    
-10. Fire up some load
+       docker-compose -f docker-compose.yaml -f docker-compose-load.yaml up
+
+11 Then 
        
        
        sudo docker compose -f docker-compose.yaml -f docker-compose-load.yaml up
