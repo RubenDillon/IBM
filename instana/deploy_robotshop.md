@@ -32,4 +32,5 @@ Configure the virtual machine
 
 5. test docker
 
-6. 
+          sudo docker run hello-world
+7. 
