@@ -1,6 +1,3 @@
-Despliegue de Robotshop en una maquina linux
-
-
 # Robotshop deployment in a Linux virtual machine
 
 In this tutorial we will be configuring an application using docker in a linux virtual machine
