@@ -32,5 +32,14 @@ Configure the virtual machine
 
 5. test docker
 
-          sudo docker run hello-world
-7. 
+       sudo docker run hello-world
+
+6. Deploy git in the virtual machine
+
+       sudo yum install git
+
+7. Clone the repository to the virtual machine
+
+       git clone https://github.com/instana/robot-shop.git
+
+8. 
