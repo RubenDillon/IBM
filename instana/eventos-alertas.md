@@ -2,6 +2,12 @@
 
 
 
-
+Crear Evento
 
 <img width="1626" alt="image" src="https://github.com/user-attachments/assets/9938873e-9c59-47e2-859d-27d1406ade35">
+
+
+Crear Alarma
+
+
+<img width="1626" alt="image" src="https://github.com/user-attachments/assets/d49f84eb-b79f-461e-b15a-23e6e9513653">
