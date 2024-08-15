@@ -1,6 +1,6 @@
 ![image](https://github.com/user-attachments/assets/52d6f872-9794-481b-82d3-9eef74183cd5)
 
-Everything that you need to use with IBM software from the Automation and App Modernization portfolio.
+This github is dedicated to everything that you need to use with IBM software from the Automation and App Modernization portfolio.
 
 IBM Automation 
 =
