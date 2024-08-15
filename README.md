@@ -8,5 +8,6 @@ IBM Automation portfolio is divided in IT and Business Automation.
 
 For the App Modernization Portfolio we have two great pillars, where we dedicate solutions to the Application and the Integration.
 
-<img width="927" alt="image" src="https://github.com/user-attachments/assets/03950ad3-eaa9-4521-a74a-e20a2a2109d5">
+<img width="875" alt="image" src="https://github.com/user-attachments/assets/169d04e4-29be-4d3c-a823-00c1c0bf8259">
+
 
