@@ -1,0 +1,39 @@
+Using GuestBook  
+=
+
+# Deploy GuestBook 
+
+1. To deploy GuestBook in K3s you need to download six yamls files that are in the present folder
+
+         frontend-svc.yaml
+         frontend.yaml
+         redis-follower-svc.yaml
+         redis-follower.yaml
+         redis-leader-svc.yaml
+         redis-leader.yaml
+
+2. Those files are for a Kustomization, to use it for a simple app deployment.
+
+       kubectl apply -k ./
+   
+3. Execute the following command and review were the service is deployed (take note about the External-IP Address)
+
+      kubectl get svc wordpress
+
+4. Use a web browser to access the WordPress (using 150.239.48.11 as an external-IP example)
+
+      http://150.239.48.11:8080
+
+   <img width="1617" alt="image" src="https://github.com/user-attachments/assets/9509b2c6-61cc-466d-a42e-23294ebde5e6">
+
+
+# Review GuestBook in Instana App perspective
+
+
+
+
+
+
+
+  
+ 
