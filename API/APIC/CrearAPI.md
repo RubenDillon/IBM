@@ -1,6 +1,6 @@
-# Arquitectura Distribuida con 3 VM en RHEL 9: Front‑end, API y Base de Datos
+# Creacion de una API utilizando una arquitectura distribuida con 3 VM en RHEL 9: Front‑end, API y Base de Datos
 
-Este documento describe cómo configurar **tres** máquinas virtuales en RHEL 9 para un servicio de consulta de clientes:
+Este paso a paso describe cómo configurar **tres** máquinas virtuales utilizando Red Hat Enterprise Linux 9 para un servicio de consulta de clientes muy basico, pero nos sirve para poder entender los pasos necesarios para poder crear una API.
 
 * **VM1 (Front‑end)**
 
