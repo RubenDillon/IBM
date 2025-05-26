@@ -85,6 +85,11 @@ firewall-cmd --reload
 
 ---
 
+otra opcion tambien es tocar el archivo /etc/my.cnf
+
+<img width="772" alt="image" src="https://github.com/user-attachments/assets/1bbf1a53-fbcd-4f8d-8b5b-1950b2417bf7" />
+
+
 ## 🛠️ VM2: Servidor de API (Apache + PHP)
 
 ```bash
