@@ -4,18 +4,19 @@ Este documento describe cómo configurar **tres** máquinas virtuales en RHEL 9
 
 * **VM1 (Front‑end)**
 
-  * IP pública: `150.239.108.78`
-  * IP privada: `10.241.0.12`
+  * IP pública: `169.59.190.191`
+  * IP privada: `10.241.64.69`
   * Apache sirve la página HTML en puerto **8080**
 
 * **VM2 (API)**
 
-  * IP privada: `10.241.0.8`
+  * IP pública: `169.59.164.213`
+  * IP privada: `10.241.64.66`
   * Apache+PHP sirve la API en puerto **8080**, consulta a VM3
 
 * **VM3 (MySQL)**
 
-  * IP privada: `10.241.0.10`
+  * IP privada: `10.241.64.68`
   * MariaDB/MySQL aloja la base de datos `clientes_db` en puerto **8080**
 
 ---
@@ -24,11 +25,11 @@ Este documento describe cómo configurar **tres** máquinas virtuales en RHEL 9
 
 ```text
 [Usuario Internet]
-    ↓ (150.239.108.78:8080)
+    ↓ (169.59.190.191:8080)
 [VM1: Front‑end Apache]
-    ↓ (10.241.0.8:8080)
+    ↓ (proxy a http://169.59.164.213:8080)
 [VM2: API Apache+PHP]
-    ↓ (10.241.0.10:8080)
+    ↓ (10.241.64.68:8080)
 [VM3: MariaDB (MySQL)]
 ```
 
@@ -36,298 +37,205 @@ Este documento describe cómo configurar **tres** máquinas virtuales en RHEL 9
 
 ## 🔧 VM3: Servidor MySQL (Puerto 8080)
 
-1. **Instalación y arranque**
+1. **Instalación de MariaDB**
 
-   ```bash
-   sudo dnf install mariadb-server -y
-   sudo systemctl enable --now mariadb
-   ```
+```bash
+#!/bin/bash
+dnf install -y mariadb-server
+systemctl enable --now mariadb
+```
 
-2. **Configurar MariaDB en puerto 8080**
+2. **Cambiar puerto de MySQL a 8080**
+   Edita o crea `/etc/my.cnf.d/mariadb-server.cnf` y agrega:
 
-   * Opción A: Editar `/etc/my.cnf`
+```ini
+[mysqld]
+port=8080
+bind-address=0.0.0.0
+```
 
-     ```bash
-     sudo sed -i '/^\[mysqld\]/a port=8080' /etc/my.cnf
-     ```
-   * Opción B: Crear `/etc/my.cnf.d/10-server-port.cnf`
+```bash
+systemctl restart mariadb
+```
 
-     ```bash
-     sudo tee /etc/my.cnf.d/10-server-port.cnf << 'EOF'
-     [mysqld]
-     port=8080
-     EOF
-     ```
+3. **Configurar acceso desde VM2**
 
-3. **Abrir puerto en firewall**
+```sql
+CREATE DATABASE clientes_db;
+CREATE USER 'apiuser'@'10.241.64.66' IDENTIFIED BY 'apipass';
+GRANT ALL PRIVILEGES ON clientes_db.* TO 'apiuser'@'10.241.64.66';
+FLUSH PRIVILEGES;
+```
 
-   ```bash
-   sudo firewall-cmd --add-port=8080/tcp --permanent
-   sudo firewall-cmd --reload
-   ```
+4. **Crear Tabla y Datos**
 
-4. **Reiniciar y verificar**
+```sql
+USE clientes_db;
+CREATE TABLE clientes (
+  IdCliente INT PRIMARY KEY,
+  nombre VARCHAR(100),
+  direccion VARCHAR(200),
+  pais VARCHAR(50)
+);
+INSERT INTO clientes VALUES (1, 'Juan Pérez', 'Calle Falsa 123', 'Argentina');
+INSERT INTO clientes VALUES (2, 'Ana García', 'Av. Siempre Viva 456', 'Chile');
+```
 
-   ```bash
-   sudo systemctl restart mariadb
-   ss -tuln | grep 8080
-   # debe mostrar '0.0.0.0:8080'
-   ```
+5. **Abrir puerto 8080**
 
-5. **Crear base de datos, tabla y usuario**
-
-   ```bash
-   mysql -u root -P 8080 -p << 'SQL'
-   CREATE DATABASE IF NOT EXISTS clientes_db;
-   USE clientes_db;
-   CREATE TABLE IF NOT EXISTS clientes (
-     IdCliente INT PRIMARY KEY,
-     Nombre VARCHAR(100),
-     Direccion VARCHAR(255),
-     Pais VARCHAR(100)
-   );
-
-   CREATE USER IF NOT EXISTS 'api_user'@'10.241.0.8' IDENTIFIED BY 'secure_password';
-   GRANT SELECT ON clientes_db.* TO 'api_user'@'10.241.0.8';
-   FLUSH PRIVILEGES;
-
-   INSERT INTO clientes VALUES
-     (1,'Juan Pérez','Calle Falsa 123','Argentina'),
-     (2,'María Gómez','Av. Siempre Viva 456','Chile')
-   ON DUPLICATE KEY UPDATE Nombre=VALUES(Nombre);
-   SQL
-   ```
+```bash
+firewall-cmd --permanent --add-port=8080/tcp
+firewall-cmd --reload
+```
 
 ---
 
 ## 🛠️ VM2: Servidor de API (Apache + PHP)
 
-1. **Instalación**
+```bash
+#!/bin/bash
+dnf install -y httpd php php-mysqli
 
-   ```bash
-   sudo dnf install httpd php php-mysqlnd -y
-   sudo systemctl enable --now httpd
-   sudo firewall-cmd --add-port=8080/tcp --permanent
-   sudo firewall-cmd --reload
-   ```
+# Configurar Apache
+sed -i 's/^Listen 80/Listen 8080/' /etc/httpd/conf/httpd.conf
+cat <<EOF >> /etc/httpd/conf/httpd.conf
+<VirtualHost *:8080>
+    DocumentRoot /var/www/html
+</VirtualHost>
 
-2. **Configurar Apache en puerto 8080**
+AddDefaultCharset UTF-8
+EOF
 
-   ```bash
-   sudo sed -i 's/Listen 80/Listen 8080/' /etc/httpd/conf/httpd.conf
-   sudo systemctl restart httpd
-   ```
+firewall-cmd --permanent --add-port=8080/tcp
+firewall-cmd --reload
+systemctl enable --now httpd
 
-3. **Desplegar API**
+# Crear archivo API
+mkdir -p /var/www/html/api
+cat <<'EOF' > /var/www/html/api/clientes.php
+<?php
+header('Content-Type: application/json; charset=utf-8');
 
-   ```bash
-   sudo mkdir -p /var/www/html/api
-   sudo chown -R apache:apache /var/www/html/api
-   cat << 'EOF' > /var/www/html/api/clientes.php
-   <?php
-   header('Access-Control-Allow-Origin: *');
-   header('Access-Control-Allow-Methods: GET, OPTIONS');
-   header('Access-Control-Allow-Headers: Content-Type');
-   header('Content-Type: application/json');
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    http_response_code(400);
+    echo json_encode(["error" => "ID inválido"]);
+    exit;
+}
 
-   if (\$_SERVER['REQUEST_METHOD'] === 'OPTIONS') exit;
+$idCliente = intval($_GET['id']);
 
-   \$id = intval(\$_GET['id'] ?? 0);
-   if (\$id <= 0) {
-     http_response_code(400);
-     echo json_encode(['error' => 'ID inválido']);
-     exit;
-   }
+$mysqli = new mysqli("10.241.64.68", "apiuser", "apipass", "clientes_db", 8080);
+$mysqli->set_charset("utf8mb4"); // Asegura que se manejan acentos correctamente
 
-   // Conectar a MariaDB en VM3 puerto 8080 con usuario dedicado
-   \$conn = new mysqli('10.241.0.10', 'api_user', 'secure_password', 'clientes_db', 8080);
-   if (\$conn->connect_error) {
-     http_response_code(500);
-     echo json_encode(['error' => 'DB Conexión fallida']);
-     exit;
-   }
+if ($mysqli->connect_errno) {
+    http_response_code(500);
+    echo json_encode(["error" => "Conexión a base de datos fallida"]);
+    exit;
+}
 
-   \$stmt = \$conn->prepare('SELECT Nombre, Direccion, Pais FROM clientes WHERE IdCliente = ?');
-   \$stmt->bind_param('i', \$id);
-   \$stmt->execute();
-   \$res = \$stmt->get_result();
+$query = "SELECT nombre, direccion, pais FROM clientes WHERE IdCliente = ?";
+$stmt = $mysqli->prepare($query);
 
-   if (\$row = \$res->fetch_assoc()) {
-     echo json_encode(\$row);
-   } else {
-     http_response_code(404);
-     echo json_encode(['error' => 'Cliente no encontrado']);
-   }
+if (!$stmt) {
+    http_response_code(500);
+    echo json_encode(["error" => "Error en la consulta"]);
+    exit;
+}
 
-   \$stmt->close();
-   \$conn->close();
-   ?>
-   EOF
-   ```
+$stmt->bind_param("i", $idCliente);
+$stmt->execute();
+$result = $stmt->get_result();
 
-4. **Verificar**
+if ($row = $result->fetch_assoc()) {
+    echo json_encode([
+        "Nombre" => $row["nombre"],
+        "Direccion" => $row["direccion"],
+        "Pais" => $row["pais"]
+    ]);
+} else {
+    echo json_encode(["error" => "Cliente no encontrado"]);
+}
 
-   ```bash
-   curl -i "http://localhost:8080/api/clientes.php?id=1"
-   ```
+$stmt->close();
+$mysqli->close();
+?>
+EOF
+```
 
 ---
 
 ## 🖥️ VM1: Servidor Front‑end (Apache)
 
-1. **Instalación**
-
-   ```bash
-   sudo dnf install httpd -y
-   sudo systemctl enable --now httpd
-   sudo firewall-cmd --add-port=8080/tcp --permanent
-   sudo firewall-cmd --reload
-   ```
-
-2. **Configurar Apache en puerto 8080**
-
-   ```bash
-   sudo sed -i 's/Listen 80/Listen 8080/' /etc/httpd/conf/httpd.conf
-   sudo systemctl restart httpd
-   ```
-
-3. **Página HTML**
-   Guarda como `/var/www/html/index.html`:
-
-   ```html
-   <!DOCTYPE html>
-   <html lang="es">
-   <head>
-     <meta charset="UTF-8">
-     <title>Buscar Cliente</title>
-     <style>
-       body { font-family: Arial, sans-serif; margin: 20px; }
-       #resultado { margin-top: 10px; color: #333; }
-       #resultado.error { color: red; }
-     </style>
-   </head>
-   <body>
-     <h1>Consulta de Cliente</h1>
-     <input type="number" id="idCliente" placeholder="ID cliente">
-     <button id="buscarBtn">Buscar</button>
-     <div id="resultado"></div>
-
-     <script>
-       document.getElementById('buscarBtn').addEventListener('click', async () => {
-         const id = document.getElementById('idCliente').value.trim();
-         const out = document.getElementById('resultado');
-         if (!id) {
-           out.textContent = 'Ingresa un ID válido.';
-           out.classList.add('error');
-           return;
-         }
-         out.textContent = 'Buscando...';
-         out.classList.remove('error');
-
-         try {
-           const res = await fetch(`http://10.241.0.8:8080/api/clientes.php?id=${id}`);
-           const data = await res.json();
-           if (!res.ok) {
-             out.textContent = data.error;
-             out.classList.add('error');
-           } else {
-             out.innerHTML =
-               `<p><strong>Nombre:</strong> ${data.Nombre}</p>` +
-               `<p><strong>Dirección:</strong> ${data.Direccion}</p>` +
-               `<p><strong>Pais:</strong> ${data.Pais}</p>`;
-           }
-         } catch (err) {
-           out.textContent = 'Error de conexión con la API.';
-           out.classList.add('error');
-         }
-       });
-     </script>
-   </body>
-   </html>
-   ```
-
----
-
-## 📝 Scripts de Automatización
-
-### `setup_vm3.sh` (MySQL)
-
 ```bash
 #!/bin/bash
-sudo dnf install mariadb-server -y
-sudo systemctl enable --now mariadb
-# Configurar puerto 8080 en /etc/my.cnf.d
-sudo tee /etc/my.cnf.d/10-server-port.cnf << 'EOF'
-[mysqld]
-port=8080
+dnf install -y httpd mod_proxy_html
+
+# Configurar Apache en puerto 8080
+sed -i 's/^Listen 80/Listen 8080/' /etc/httpd/conf/httpd.conf
+cat <<EOF >> /etc/httpd/conf/httpd.conf
+<VirtualHost *:8080>
+    DocumentRoot /var/www/html
+</VirtualHost>
+
+ProxyRequests Off
+ProxyPass "/api_proxy/" "http://169.59.164.213:8080/api/"
+ProxyPassReverse "/api_proxy/" "http://169.59.164.213:8080/api/"
+
+AddDefaultCharset UTF-8
 EOF
-sudo firewall-cmd --add-port=8080/tcp --permanent
-sudo firewall-cmd --reload
-sudo systemctl restart mariadb
-mysql -u root -P 8080 -p << 'SQL'
-CREATE DATABASE IF NOT EXISTS clientes_db;
-USE clientes_db;
-CREATE TABLE IF NOT EXISTS clientes (IdCliente INT PRIMARY KEY, Nombre VARCHAR(100), Direccion VARCHAR(255), Pais VARCHAR(100));
-CREATE USER IF NOT EXISTS 'api_user'@'10.241.0.8' IDENTIFIED BY 'secure_password';
-GRANT SELECT ON clientes_db.* TO 'api_user'@'10.241.0.8';
-FLUSH PRIVILEGES;
-INSERT INTO clientes VALUES (1,'Juan Pérez','Calle Falsa 123','Argentina'),(2,'María Gómez','Av. Siempre Viva 456','Chile') ON DUPLICATE KEY UPDATE Nombre=VALUES(Nombre);
-SQL
-```
 
-### `setup_vm2.sh` (API)
+firewall-cmd --permanent --add-port=8080/tcp
+firewall-cmd --reload
+systemctl enable --now httpd
 
-```bash
-#!/bin/bash
-sudo dnf install httpd php php-mysqlnd -y
-sudo systemctl enable --now httpd
-sudo firewall-cmd --add-port=8080/tcp --permanent
-sudo firewall-cmd --reload
-sudo sed -i 's/Listen 80/Listen 8080/' /etc/httpd/conf/httpd.conf
-sudo systemctl restart httpd
-sudo mkdir -p /var/www/html/api && sudo chown -R apache:apache /var/www/html/api
-cat << 'EOF' > /var/www/html/api/clientes.php
-<?php
-header('Access-Control-Allow-Origin: *');
-header('Content-Type: application/json');
-if (\$_SERVER['REQUEST_METHOD']==='OPTIONS') exit;
-\$id = intval(\$_GET['id'] ?? 0);
-if (\$id<=0) { http_response_code(400); echo json_encode(['error'=>'ID inválido']); exit; }
-\$conn = new mysqli('10.241.0.10','api_user','secure_password','clientes_db',8080);
-if (\$conn->connect_error) { http_response_code(500); echo json_encode(['error'=>'DB Conexión fallida']); exit; }
-\$stmt = \$conn->prepare('SELECT Nombre, Direccion, Pais FROM clientes WHERE IdCliente=?');
-\$stmt->bind_param('i', \$id);
-\$stmt->execute();
-\$res = \$stmt->get_result();
-if (\$row=\$res->fetch_assoc()) echo json_encode(\$row);
-else { http_response_code(404); echo json_encode(['error'=>'Cliente no encontrado']); }
-\$stmt->close(); \$conn->close();
-?>
-EOF
-```
-
-### `setup_vm1.sh` (Front‑end)
-
-```bash
-#!/bin/bash
-sudo dnf install httpd -y
-sudo systemctl enable --now httpd
-sudo firewall-cmd --add-port=8080/tcp --permanent
-sudo firewall-cmd --reload
-sudo sed -i 's/Listen 80/Listen 8080/' /etc/httpd/conf/httpd.conf
-sudo systemctl restart httpd
-cat << 'EOF' > /var/www/html/index.html
+# Crear HTML
+cat <<'EOF' > /var/www/html/index.html
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Buscar Cliente</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Buscar Cliente</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    #resultado { margin-top: 10px; color: #333; }
+    #resultado.error { color: red; }
+  </style>
+</head>
 <body>
   <h1>Consulta de Cliente</h1>
   <input type="number" id="idCliente" placeholder="ID cliente">
-  <button onclick="buscar()">Buscar</button>
+  <button id="buscarBtn">Buscar</button>
   <div id="resultado"></div>
-<script>
-async function buscar(){const id=document.getElementById('idCliente').value;const out=document.getElementById('resultado');out.textContent='Buscando...';try{const res=await fetch(`http://10.241.0.8:8080/api/clientes.php?id=${id}`);const data=await res.json();if(!res.ok)out.textContent=data.error;else out.innerHTML=`Nombre: ${data.Nombre}<br>Dirección: ${data.Direccion}<br>Pais: ${data.Pais}`;}catch(e){out.textContent='Error conexión API';}};
-</script>
+
+  <script>
+  document.getElementById('buscarBtn').addEventListener('click', buscar);
+  async function buscar() {
+    const id = document.getElementById('idCliente').value;
+    const out = document.getElementById('resultado');
+    out.textContent = 'Buscando...';
+    try {
+      const res = await fetch(`/api_proxy/clientes.php?id=${id}`);
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch(e) {
+        out.textContent = 'Respuesta no válida JSON';
+        return;
+      }
+      if (!res.ok || data.error) {
+        out.textContent = data.error;
+        out.classList.add('error');
+      } else {
+        out.classList.remove('error');
+        out.innerHTML =
+          `Nombre: ${data.Nombre}<br>Dirección: ${data.Direccion}<br>País: ${data.Pais}`;
+      }
+    } catch(e) {
+      out.textContent = 'Error conexión API';
+    }
+  }
+  </script>
 </body>
 </html>
 EOF
@@ -337,7 +245,9 @@ EOF
 
 ## ✅ Resumen Final
 
-* **VM1**: Interfaz pública en `150.239.108.78:8080`.
-* **VM2**: API PHP en `10.241.0.8:8080`, usa `api_user` para conectar a MariaDB.
-* **VM3**: MariaDB en `10.241.0.10:8080`, base de datos `clientes_db`.
+* Usuario accede por navegador a `http://169.59.190.191:8080`
+* HTML envía consulta a `/api_proxy/...` → Apache la redirige a VM2
+* VM2 procesa con PHP, consulta a VM3 (MySQL) en puerto 8080
+* Se devuelve la respuesta JSON a VM1, que lo muestra en pantalla
 
+Todo el sistema es modular y puede escalar por separado según demanda.
