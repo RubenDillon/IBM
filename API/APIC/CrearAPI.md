@@ -2,6 +2,8 @@
 
 Este paso a paso describe cómo configurar **tres** máquinas virtuales utilizando Red Hat Enterprise Linux 9 para un servicio de consulta de clientes muy basico, pero nos sirve para poder entender los pasos necesarios para poder crear una API.
 
+La VM2 la exponemos con una IP publica, ya que la idea es poder accederla desde un API Manager externo y poder concientizar los problemas que existen, al exponer APIs sin ningun control.
+
 * **VM1 (Front‑end)**
 
   * IP pública: `169.59.190.191`
