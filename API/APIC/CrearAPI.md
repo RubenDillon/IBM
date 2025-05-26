@@ -164,6 +164,11 @@ EOF
 
 ---
 
+Revisar que Listen 8080 quede correctamente (no 808080)
+
+<img width="771" alt="image" src="https://github.com/user-attachments/assets/6e7449e7-333b-4546-bce9-65054ee631a8" />
+
+
 ## 🖥️ VM1: Servidor Front‑end (Apache)
 
 ```bash
