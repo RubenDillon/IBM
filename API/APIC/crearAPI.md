@@ -341,4 +341,3 @@ EOF
 * **VM2**: API PHP en `10.241.0.8:8080`, usa `api_user` para conectar a MariaDB.
 * **VM3**: MariaDB en `10.241.0.10:8080`, base de datos `clientes_db`.
 
-Con estos pasos y scripts, tendrás tu plataforma de consulta de clientes operativa desde cero en RHEL 9.
