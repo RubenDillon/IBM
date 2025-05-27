@@ -273,4 +273,7 @@ EOF
 3) Siempre tenemos la opcion de curl desde alguna de las VMs (utilizando la IP interna, como la externa)
 <img width="1522" alt="image" src="https://github.com/user-attachments/assets/4fbba81b-1c50-44d4-ba4b-4cd06573a5bd" />
 
+4) Inclusive, la opcion directa desde el browser (http://169.59.190.191:8080/api_proxy/clientes.php?id=1)
+<img width="1107" alt="image" src="https://github.com/user-attachments/assets/d2ea1ea8-fd12-43e7-80a9-0329cd62665b" />
+
 
