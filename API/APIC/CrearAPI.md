@@ -233,8 +233,13 @@ cat <<'EOF' > /var/www/html/index.html
         out.classList.add('error');
       } else {
         out.classList.remove('error');
-        out.innerHTML =
-          `Nombre: ${data.Nombre}<br>Dirección: ${data.Direccion}<br>País: ${data.Pais}`;
+        if (data.Nombre && data.Direccion && data.Pais) {
+          out.innerHTML =
+            `Nombre: ${data.Nombre}<br>Dirección: ${data.Direccion}<br>País: ${data.Pais}`;
+        } else {
+          out.textContent = "Cliente no encontrado";
+          out.classList.add('error');
+        }
       }
     } catch(e) {
       out.textContent = 'Error conexión API';
