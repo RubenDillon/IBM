@@ -257,20 +257,19 @@ EOF
 
 * Usuario accede por navegador a `http://169.59.190.191:8080`
 <img width="866" alt="image" src="https://github.com/user-attachments/assets/36d6a027-f4b8-4a3c-9d79-e64f7306fc80" />
-
 * HTML envía consulta a `/api_proxy/...` → Apache la redirige a VM2
 * VM2 procesa con PHP, consulta a VM3 (MySQL) en puerto 8080
 * Se devuelve la respuesta JSON a VM1, que lo muestra en pantalla
 <img width="866" alt="image" src="https://github.com/user-attachments/assets/e357d01b-9580-445e-b622-29bb0865f9a9" />
 
-## Utilizar otras herramientas (por ejemplo Postman)
-1) Ingresar en https://web.postman.co/ y colocar la direccion de la API http://169.59.164.213:8080/api/clientes.php?id=1
+## Utilizar otras herramientas
+1) Utilizando Postman, ingresar en https://web.postman.co/ y colocar la direccion de la API http://169.59.164.213:8080/api/clientes.php?id=1
 <img width="1409" alt="image" src="https://github.com/user-attachments/assets/1bda2611-1744-4e4c-924a-edc194012672" />
 
 2) O poner en modo Desarrollador al browser
 <img width="1781" alt="image" src="https://github.com/user-attachments/assets/dd08c220-c58d-470d-a74e-2741bc9a90fc" />
 
-3) Siempre tenemos la opcion de curl desde alguna de las VMs (utilizando la IP interna, como la externa)
+3) Siempre tenemos la opcion de usar curl desde alguna de las VMs (utilizando la IP interna o la externa del servidor que publica la API)
 <img width="1522" alt="image" src="https://github.com/user-attachments/assets/4fbba81b-1c50-44d4-ba4b-4cd06573a5bd" />
 
 4) Inclusive, la opcion directa desde el browser (http://169.59.190.191:8080/api_proxy/clientes.php?id=1)
