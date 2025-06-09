@@ -1,4 +1,6 @@
 # Asegurando los Secretos
+Apendice
+-
 
 Durante el desarrollo del workshop hemos visto como crear Client Id y Client Secret, hemos visto como conectarnos por la API a la base de datos... pero tambien, hemos visto como dejar esas credenciales en archivos php o html. 
 
