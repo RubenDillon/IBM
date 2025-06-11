@@ -175,8 +175,8 @@ $response = curl_exec($vault);
 curl_close($vault);
 
 $data = json_decode($response, true);
-$user = $data["data"]["usuario"];
-$pass = $data["data"]["password"];
+$user = $data["data"]["data"]["usuario"];
+$pass = $data["data"][["data"]"password"];
 
 $mysqli = new mysqli("10.241.64.68", $user, $pass, "clientes_db", 8080);
 ```
