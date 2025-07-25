@@ -217,3 +217,19 @@ podman container prune
 podman rmi --all --force
 ```
 
+Cambiando el comportamiento del cron
+
+```
+# Iniciar el contenedor a los minutos 00, 15, 30 y 45
+00 * * * * /bin/podman start youtube_chromium40
+05 * * * * /bin/podman start youtube_chromium50
+
+# Detener el contenedor 50
+
+# Detener el contenedor 40
+42 * * * * /usr/bin/podman stop youtube_chromium40
+55 * * * * /usr/bin/podman stop youtube_chromium50
+56 * * * * /usr/bin/podman rm -a -f
+58 * * * * /usr/bin/podman create --name youtube_chromium40 --net host -e DISPLAY=:0 -p 8080:8080  localhost/youtube-viewer40
+01 * * * * /usr/bin/podman create --name youtube_chromium50 --net host -e DISPLAY=:0 -p 7070:7070 localhost/youtube-viewer50
+``
