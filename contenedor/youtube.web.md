@@ -167,7 +167,7 @@ podman rmi --all --force
 
 podman build -t youtube-viewer .
 
-podman create --name youtube_chromium -p 8080:8080 youtube-kiosk
+podman create --name youtube_chromium -p 8080:8080 localhost/youtube-viewer
 ```
 
 Luego, ya podés usar `cron` en el host para iniciar el contenedor así:
@@ -179,8 +179,12 @@ crontab -e
 Agregar esta linea 
 
 ```cron
-*/15 * * * * /usr/bin/podman start youtube_chromium
-5-59/15 * * * * /usr/bin/podman stop youtube_chromium
+# Iniciar el contenedor a los minutos 00, 15, 30 y 45
+00,15,30,45 * * * * /usr/bin/podman start youtube_chromium
+
+# Detener el contenedor a los minutos 12, 28, 43 y 58
+12,28,43,58 * * * * /usr/bin/podman stop youtube_chromium
+
 ```
 
 Esto lo arranca en los minutos 00, 15, 30, 45 y lo apaga en 05, 20, 35, 50 respectivamente.
