@@ -157,6 +157,13 @@ Primero asegurar que el contenedor no esta levantado
 podman container list
 ```
 
+Nos aseguramos que crone esta instalado y activo 
+
+```
+dnf install cronie -y
+systemctl enable crond --now
+```
+
 Para asegurar que no este levantado y solo creado
 
 ```
