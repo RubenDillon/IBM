@@ -1,7 +1,7 @@
 
-# Contenedor con Chromium + VNC + noVNC en RHEL (puerto 8080)
+# Contenedor con Chromium + VNC + noVNC en Fedora (puerto 8080)
 
-Este contenedor permite ejecutar Chromium en un entorno sin GUI (RHEL minimal), renderizado con Xvfb y accesible vía navegador web usando noVNC en el puerto 8080.
+Este contenedor permite ejecutar Chromium en un entorno sin GUI (Fedora minimal), renderizado con Xvfb y accesible vía navegador web usando noVNC en el puerto 8080.
 
 ---
 
@@ -99,14 +99,18 @@ exec "$0"
 
 export DISPLAY=:0
 
-chromium-browser --no-sandbox --disable-gpu --disable-software-rasterizer \
-  --autoplay-policy=no-user-gesture-required \
-  --disable-features=MediaSessionService \
-  --window-size=1920,1080 --start-fullscreen --kiosk "https://www.youtube.com/watch?v=AWFPhBKeea4&autoplay=1&mute=1" &
+URL="https://www.youtube.com/embed/videoseries?list=PLBrdJqPHEZjuuzjTs7pZ_mnDagZHgqTfG&autoplay=1&mute=1&loop=1&playlist=AWFPhBKeea4,W7nXhghwvQ4,t_VsTw0Sj5o"
 
-sleep 600
+while true; do
+  echo "Iniciando Chromium en modo kiosko..."
+  chromium-browser --no-sandbox --disable-gpu --disable-software-rasterizer \
+    --autoplay-policy=no-user-gesture-required \
+    --disable-features=MediaSessionService \
+    --window-size=1920,1080 --start-fullscreen --kiosk "$URL"
+  echo "Chromium terminó. Reiniciando en 5 segundos..."
+  sleep 5
+done
 
-pkill -f chromium-browser
 ```
 
 ---
@@ -124,9 +128,9 @@ x11vnc -display :99 -nopw -forever -shared
 ## 🧪 Cómo construir y ejecutar
 
 ```bash
-podman build -t youtube-viewer .
+podman build -t youtube-kiosk .
 
-podman run -d --name youtube_chromium -p 8080:8080 youtube-viewer
+podman run -d --name youtube_kiosk -it --net=host youtube-kiosk
 ```
 
 ---
@@ -144,13 +148,17 @@ http://IP_DEL_SERVIDOR:8080/vnc.html
 ## 🧹 Detener y eliminar contenedores
 
 ```bash
-podman stop youtube_chromium
-podman rm youtube_chromium
+podman stop youtube_kiosk
+podman rm youtube_kiosk
 ```
 
 ---
 
-## 🔁 Ejecutar el contenedor cada 15 minutos
+NOTA: El contenedor como esta configurado siempre va a estar funcionando, no necesita reiniciar ni nada... el playlist termina... se espera 5 segundos... y vuelve a correr
+=
+
+
+## 🔁 Ejecutar el contenedor cada 30 minutos (suponiendo que por algun motivo deseamos reiniciarlo cada 30 minutos)
 
 Primero asegurar que el contenedor no esta levantado
 ```
@@ -172,9 +180,9 @@ podman rm -a -f
 podman container prune
 podman rmi --all --force
 
-podman build -t youtube-viewer .
+podman build -t youtube-kiosk .
 
-podman create --name youtube_chromium --net host -e DISPLAY=:0 -p 8080:8080  localhost/youtube-viewer
+podman create --name youtube_kiosk --net host -e DISPLAY=:0 -p 8080:8080  localhost/youtube-kiosk
 ```
 
 Luego, ya podés usar `cron` en el host para iniciar el contenedor así:
@@ -186,13 +194,13 @@ crontab -e
 Agregar esta linea 
 
 ```cron
-# Iniciar el contenedor a los minutos 00, 15, 30 y 45
-00,15,30,45 * * * * /usr/bin/podman start youtube_chromium
+# Iniciar el contenedor a los minutos 00, y 30 de cada hora
+00,30 * * * * /usr/bin/podman start youtube_kiosk
 
-# Detener el contenedor a los minutos 12, 28, 43 y 58
-57,12,27,41 * * * * /usr/bin/podman stop youtube_chromium
-58,13,28,42 * * * * /usr/bin/podman rm -a -f
-59,14,29,43 * * * * /usr/bin/podman create --name youtube_chromium --net host -e DISPLAY=:0 -p 8080:8080  localhost/youtube-viewer
+# Detener el contenedor a los minutos 27 y 57
+57,27 * * * * /usr/bin/podman stop youtube_kiosk
+58,28 * * * * /usr/bin/podman rm -a -f
+59,29 * * * * /usr/bin/podman create --name youtube_kiosk --net host -e DISPLAY=:0 -p 8080:8080  localhost/youtube-kiosk
 
 ```
 
@@ -217,39 +225,4 @@ podman container prune
 podman rmi --all --force
 ```
 
-Cambiando el comportamiento del cron con una nueva ejecucion de 50 minutos
---
 
-Modificar watch_once 
--
-
-```
-chromium-browser --no-sandbox --disable-gpu --disable-software-rasterizer \
-  --autoplay-policy=no-user-gesture-required \
-  --disable-features=MediaSessionService \
-  --window-size=1920,1080 --start-fullscreen --kiosk "https://www.youtube.com/watch?v=AWFPhBKeea4&autoplay=1&mute=1" &
-
-sleep 3000
-
-pkill -f chromium-browser
-```
-
-Volver a hacer el build
--
-
-```
-podman build -t youtube-viewer50 .
-```
-
-Modificar el cron
--
-```
-# Iniciar el contenedor a los minutos 00, 15, 30 y 45
-00 * * * * /bin/podman start youtube_chromium50
-
-
-# Detener el contenedor 40
-52 * * * * /usr/bin/podman stop youtube_chromium50
-56 * * * * /usr/bin/podman rm -a -f
-58 * * * * /usr/bin/podman create --name youtube_chromium50 --net host -e DISPLAY=:0 -p 8080:8080 localhost/youtube-viewer50
-```
