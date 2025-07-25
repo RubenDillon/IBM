@@ -168,6 +168,13 @@ Y dejar que el contenedor se apague solo al terminar los 10 minutos de reproducc
 
 ---
 
+Para validar si el cron ha sido ejecutado
+
+```
+journalctl -u crond
+
+```
+
 
 Matar todos los contenedores 
 
