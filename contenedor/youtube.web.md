@@ -160,3 +160,11 @@ Podés usar `cron` en el host para iniciar el contenedor así:
 Y dejar que el contenedor se apague solo al terminar los 10 minutos de reproducción (usando `sleep 600 && podman stop self` si se desea).
 
 ---
+
+
+Matar todos los contenedores 
+
+```
+podman ps -q | xargs -r podman stop
+```
+
