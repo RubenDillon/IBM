@@ -30,7 +30,7 @@ Este contenedor permite ejecutar Chromium en un entorno sin GUI (RHEL minimal), 
 ## 📄 Dockerfile
 
 ```Dockerfile
-FROM registry.access.redhat.com/ubi8/ubi
+FROM fedora:40
 
 # Instalar paquetes necesarios
 RUN dnf install -y \
@@ -50,7 +50,7 @@ RUN useradd -ms /bin/bash usuario
 USER usuario
 WORKDIR /home/usuario
 
-# Clonar noVNC
+# Clonar noVNC y su dependencia websockify
 RUN git clone https://github.com/novnc/noVNC.git /opt/noVNC && \
     git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify
 
@@ -58,7 +58,7 @@ RUN git clone https://github.com/novnc/noVNC.git /opt/noVNC && \
 COPY start.sh watch_once.sh x11vnc.sh ./
 RUN chmod +x *.sh
 
-# Ejecutar el script principal
+# Comando de inicio
 CMD ["./start.sh"]
 
 ```
