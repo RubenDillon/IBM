@@ -190,7 +190,9 @@ Agregar esta linea
 00,15,30,45 * * * * /usr/bin/podman start youtube_chromium
 
 # Detener el contenedor a los minutos 12, 28, 43 y 58
-12,28,43,58 * * * * /usr/bin/podman stop youtube_chromium
+57,12,27,41 * * * * /usr/bin/podman stop youtube_chromium
+58,13,28,42 * * * * /usr/bin/podman rm -a -f
+59,14,29,43 * * * * /usr/bin/podman create --name youtube_chromium --net host -e DISPLAY=:0 -p 8080:8080  localhost/youtube-viewer
 
 ```
 
