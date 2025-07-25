@@ -183,7 +183,7 @@ Agregar esta linea
 5-59/15 * * * * /usr/bin/podman stop youtube_chromium
 ```
 
-Y dejar que el contenedor se apague solo al terminar los 10 minutos de reproducción (usando `sleep 600 && podman stop self` si se desea).
+Esto lo arranca en los minutos 00, 15, 30, 45 y lo apaga en 05, 20, 35, 50 respectivamente.
 
 ---
 
