@@ -150,9 +150,25 @@ podman rm youtube_chromium
 
 ---
 
-## 🔁 Ejecutar el contenedor cada 15 minutos (opcional)
+## 🔁 Ejecutar el contenedor cada 15 minutos
 
-Podés usar `cron` en el host para iniciar el contenedor así:
+Primero asegurar que el contenedor no esta levantado
+```
+podman container list
+```
+
+Para asegurar que no este levantado y solo creado
+
+```
+podman ps -q | xargs -r podman stop
+podman rm -a -f
+podman container prune
+podman rmi --all --force
+
+podman create --name youtube_chromium -p 8080:8080 youtube-kiosk
+```
+
+Luego, ya podés usar `cron` en el host para iniciar el contenedor así:
 
 ```
 crontab -e
@@ -161,9 +177,8 @@ crontab -e
 Agregar esta linea 
 
 ```cron
-*/13 * * * * /usr/bin/podman container stop youtube_chromium
-*/14 * * * * /usr/bin/podman rm -a -f
-*/15 * * * * /usr/bin/podman run -d --name youtube_chromium -p 8080:8080 localhost/youtube-viewer
+*/15 * * * * /usr/bin/podman start youtube_chromium
+5-59/15 * * * * /usr/bin/podman stop youtube_chromium
 ```
 
 Y dejar que el contenedor se apague solo al terminar los 10 minutos de reproducción (usando `sleep 600 && podman stop self` si se desea).
