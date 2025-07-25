@@ -162,7 +162,8 @@ Agregar esta linea
 
 ```cron
 */13 * * * * /usr/bin/podman container stop youtube_viewer
-*/15 * * * * /usr/bin/podman run -d --name youtube_chromium -p 8080:8080 youtube_viewer
+*/14 * * * * /usr/bin/podman rm -a -f
+*/15 * * * * /usr/bin/podman run -d --name youtube_chromium -p 8080:8080 localhost/youtube-viewer
 ```
 
 Y dejar que el contenedor se apague solo al terminar los 10 minutos de reproducción (usando `sleep 600 && podman stop self` si se desea).
