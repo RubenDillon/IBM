@@ -30,29 +30,37 @@ Este contenedor permite ejecutar Chromium en un entorno sin GUI (RHEL minimal), 
 ## 📄 Dockerfile
 
 ```Dockerfile
-FROM registry.access.redhat.com/ubi9/ubi
+FROM registry.access.redhat.com/ubi8/ubi
 
-USER root
+# Instalar paquetes necesarios
+RUN dnf install -y \
+    chromium \
+    xorg-x11-server-Xvfb \
+    x11vnc \
+    git \
+    python3 \
+    python3-pip \
+    procps \
+    wget \
+    tar \
+    && dnf clean all
 
-# Instalar herramientas necesarias y epel-release
-RUN dnf -y install wget rpm git &&     wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm &&     rpm -ivh epel-release-latest-9.noarch.rpm &&     dnf config-manager --enable epel &&     dnf makecache &&     dnf -y install chromium xorg-x11-server-Xvfb x11vnc xdotool wmctrl python3 &&     dnf clean all
+# Crear usuario no root
+RUN useradd -ms /bin/bash usuario
+USER usuario
+WORKDIR /home/usuario
 
 # Clonar noVNC
-RUN git clone https://github.com/novnc/noVNC.git /opt/noVNC &&     git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify
-
-# Crear usuario
-RUN useradd -ms /bin/bash chromeuser
-
-USER chromeuser
-WORKDIR /home/chromeuser
+RUN git clone https://github.com/novnc/noVNC.git /opt/noVNC && \
+    git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify
 
 # Copiar scripts
-COPY --chown=chromeuser:chromeuser start.sh watch_once.sh x11vnc.sh .
+COPY start.sh watch_once.sh x11vnc.sh ./
 RUN chmod +x *.sh
 
-EXPOSE 8080
-
+# Ejecutar el script principal
 CMD ["./start.sh"]
+
 ```
 
 ---
