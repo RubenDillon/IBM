@@ -32,7 +32,7 @@ Este contenedor permite ejecutar Chromium en un entorno sin GUI (RHEL minimal), 
 ```Dockerfile
 FROM fedora:40
 
-# Instalar paquetes necesarios
+# Instalar paquetes
 RUN dnf install -y \
     chromium \
     xorg-x11-server-Xvfb \
@@ -45,22 +45,20 @@ RUN dnf install -y \
     tar \
     && dnf clean all
 
-# Crear usuario no root
+# Clonar noVNC y websockify como root (antes de cambiar de usuario)
+RUN git clone https://github.com/novnc/noVNC.git /opt/noVNC && \
+    git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify
+
+# Crear usuario no root y cambiar a él
 RUN useradd -ms /bin/bash usuario
 USER usuario
 WORKDIR /home/usuario
 
-# Clonar noVNC y su dependencia websockify
-RUN git clone https://github.com/novnc/noVNC.git /opt/noVNC && \
-    git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify
-
-# Copiar scripts
+# Copiar scripts y dar permisos
 COPY start.sh watch_once.sh x11vnc.sh ./
 RUN chmod +x *.sh
 
-# Comando de inicio
 CMD ["./start.sh"]
-
 ```
 
 ---
