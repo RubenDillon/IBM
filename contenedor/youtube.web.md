@@ -27,6 +27,22 @@ Este contenedor permite ejecutar Chromium en un entorno sin GUI (Fedora minimal)
 
 ---
 
+## Preparar el ambiente
+
+```
+sudo dnf install -y podman
+sudo dnf install -y podman git wget tar unzip
+sudo dnf install -y python3-pip
+
+
+sudo rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-9
+curl -Iv https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-9
+sudo dnf install -y   https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
+sudo dnf makecache
+
+```
+
+
 ## 📄 Dockerfile
 
 ```Dockerfile
