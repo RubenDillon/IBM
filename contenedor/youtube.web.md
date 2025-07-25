@@ -217,8 +217,32 @@ podman container prune
 podman rmi --all --force
 ```
 
-Cambiando el comportamiento del cron
+Cambiando el comportamiento del cron con una nueva ejecucion de 50 minutos
+--
 
+Modificar watch_once 
+-
+
+```
+chromium-browser --no-sandbox --disable-gpu --disable-software-rasterizer \
+  --autoplay-policy=no-user-gesture-required \
+  --disable-features=MediaSessionService \
+  --window-size=1920,1080 --start-fullscreen --kiosk "https://www.youtube.com/watch?v=AWFPhBKeea4&autoplay=1&mute=1" &
+
+sleep 3000
+
+pkill -f chromium-browser
+```
+
+Volver a hacer el build
+-
+
+```
+podman build -t youtube-viewer50 .
+```
+
+Modificar el cron
+-
 ```
 # Iniciar el contenedor a los minutos 00, 15, 30 y 45
 00 * * * * /bin/podman start youtube_chromium50
