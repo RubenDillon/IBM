@@ -167,5 +167,6 @@ Matar todos los contenedores
 ```
 podman ps -q | xargs -r podman stop
 podman rm -a -f
+podman container prune
 ```
 
