@@ -161,7 +161,8 @@ crontab -e
 Agregar esta linea 
 
 ```cron
-*/15 * * * * podman start youtube_chromium
+*/13 * * * * /usr/bin/podman container stop youtube_viewer
+*/15 * * * * /usr/bin/podman run -d --name youtube_chromium -p 8080:8080 youtube_viewer
 ```
 
 Y dejar que el contenedor se apague solo al terminar los 10 minutos de reproducción (usando `sleep 600 && podman stop self` si se desea).
