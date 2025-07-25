@@ -174,7 +174,7 @@ podman rmi --all --force
 
 podman build -t youtube-viewer .
 
-podman create --name youtube_chromium -p 8080:8080 localhost/youtube-viewer
+podman create --name youtube_chromium --net host -e DISPLAY=:0 -p 8080:8080  localhost/youtube-viewer
 ```
 
 Luego, ya podés usar `cron` en el host para iniciar el contenedor así:
