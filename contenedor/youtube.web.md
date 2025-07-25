@@ -154,6 +154,12 @@ podman rm youtube_chromium
 
 Podés usar `cron` en el host para iniciar el contenedor así:
 
+```
+crontab -e
+```
+
+Agregar esta linea 
+
 ```cron
 */15 * * * * podman start youtube_chromium
 ```
