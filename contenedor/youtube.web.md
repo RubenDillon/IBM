@@ -40,28 +40,29 @@ RUN dnf install -y \
     python3 \
     python3-pip \
     procps \
+    mesa-dri-drivers \
+    mesa-libGL \
+    libXScrnSaver \
+    libXcursor \
+    libXrandr \
+    alsa-lib \
     wget \
     tar \
     && dnf clean all
 
-# Clonar noVNC y websockify como root
+# Clonar noVNC y websockify antes de cambiar usuario
 RUN git clone https://github.com/novnc/noVNC.git /opt/noVNC && \
     git clone https://github.com/novnc/websockify /opt/noVNC/utils/websockify
 
-# Copiar scripts antes de cambiar de usuario
+RUN useradd -ms /bin/bash usuario
+
 COPY start.sh watch_once.sh x11vnc.sh /home/usuario/
+RUN chown usuario:usuario /home/usuario/*.sh && chmod +x /home/usuario/*.sh
 
-# Crear usuario y asignar permisos a los scripts
-RUN useradd -ms /bin/bash usuario && \
-    chown usuario:usuario /home/usuario/*.sh && \
-    chmod +x /home/usuario/*.sh
-
-# Cambiar a usuario no root
 USER usuario
 WORKDIR /home/usuario
 
 CMD ["./start.sh"]
-
 ```
 
 ---
@@ -71,19 +72,22 @@ CMD ["./start.sh"]
 ```bash
 #!/bin/bash
 
-# Iniciar Xvfb
-Xvfb :99 -screen 0 1280x720x24 &
+Xvfb :0 -screen 0 1920x1080x24 &
+export DISPLAY=:0
 
-export DISPLAY=:99
+./x11vnc.sh &
 
-# Iniciar x11vnc (sin contraseña)
-x11vnc -display :99 -nopw -forever -shared &
+sleep 5
 
-# Lanzar Chromium para ver un video por 10 minutos
-./watch_once.sh &
+/opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 8080 &
 
-# Iniciar noVNC (WebSocket en puerto 8080)
-/opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 8080
+sleep 3
+
+./watch_once.sh
+
+sleep 300
+
+exec "$0"
 ```
 
 ---
@@ -93,19 +97,16 @@ x11vnc -display :99 -nopw -forever -shared &
 ```bash
 #!/bin/bash
 
-export DISPLAY=:99
+export DISPLAY=:0
 
-# Esperar a que el Xvfb y VNC estén listos
-sleep 5
+chromium-browser --no-sandbox --disable-gpu --disable-software-rasterizer \
+  --autoplay-policy=no-user-gesture-required \
+  --disable-features=MediaSessionService \
+  --window-size=1920,1080 --start-fullscreen --kiosk "https://www.youtube.com/watch?v=AWFPhBKeea4&autoplay=1&mute=1" &
 
-# Lanzar Chromium en modo app
-chromium-browser --no-sandbox --disable-gpu --start-fullscreen --app=https://www.youtube.com/watch?v=AWFPhBKeea4 &
-
-# Ver el video durante 10 minutos
 sleep 600
 
-# Cerrar Chromium
-pkill chromium
+pkill -f chromium-browser
 ```
 
 ---
