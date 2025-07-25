@@ -40,6 +40,11 @@ curl -Iv https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-9
 sudo dnf install -y   https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm
 sudo dnf makecache
 
+sudo mkdir -p /run/user/$(id -u)
+sudo chown "$USER":"$USER" /run/user/$(id -u)
+ls -ld /run/user/$(id -u)
+
+
 ```
 
 
