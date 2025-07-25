@@ -165,6 +165,8 @@ podman rm -a -f
 podman container prune
 podman rmi --all --force
 
+podman build -t youtube-viewer .
+
 podman create --name youtube_chromium -p 8080:8080 youtube-kiosk
 ```
 
