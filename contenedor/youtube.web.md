@@ -191,7 +191,7 @@ done
 
 2) Reduciendo la pantalla a 1024,768 para que sea mas visible
 
-3) Hay que entrar una vez, seleccionar que inicie el playlist y luego validar loop / shuffle
+3) Hay que entrar una vez, seleccionar que inicie el playlist y luego validar loop / shuffle, playback speed y close captions
 
 4) Revisar que durante el dia ... no cambie nada... 
 
