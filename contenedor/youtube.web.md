@@ -3,6 +3,8 @@
 
 Este contenedor permite ejecutar Chromium en un entorno sin GUI (Fedora minimal), renderizado con Xvfb y accesible vía navegador web usando noVNC en el puerto 8080.
 
+Como ejemplo, usamos una lista de reproduccion de videos.
+
 ---
 
 ## ✅ Características
