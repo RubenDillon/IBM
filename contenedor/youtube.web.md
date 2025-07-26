@@ -193,7 +193,7 @@ done
 
 3) Hay que entrar una vez, seleccionar que inicie el playlist y luego validar loop / shuffle
 
-4) Revisar que durante el dia ... no cambie nada... y de este modo, asi cuenta visitas
+4) Revisar que durante el dia ... no cambie nada... 
 
 ---
 
