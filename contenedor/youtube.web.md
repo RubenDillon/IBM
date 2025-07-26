@@ -185,6 +185,16 @@ done
 
 ```
 
+## ▶️ Adaptando Watch_once.sh
+
+1) Poniendo una playlist directamente "https://www.youtube.com/playlist?list=PLBrdJqPHEZjuuzjTs7pZ_mnDagZHgqTfG"
+
+2) Reduciendo la pantalla a 1024,768 para que sea mas visible
+
+3) Hay que entrar una vez, seleccionar que inicie el playlist y luego validar loop / shuffle
+
+4) Revisar que durante el dia ... no cambie nada... y de este modo, asi cuenta visitas
+
 ---
 
 ## ▶️ x11vnc.sh (opcional)
