@@ -88,6 +88,7 @@ WORKDIR /home/usuario
 ENV DISPLAY=:0
 
 CMD ["./start.sh"]
+
 ```
 
 ---
@@ -119,7 +120,6 @@ for i in {1..10}; do
   fi
 done
 
-# Si después del loop no está disponible, abortar
 if ! xdpyinfo -display $DISPLAY > /dev/null 2>&1; then
   echo "❌ ERROR: El display $DISPLAY no está disponible después de 10 segundos."
   echo "📝 Contenido de $LOG_DIR/xvfb.log:"
@@ -127,7 +127,6 @@ if ! xdpyinfo -display $DISPLAY > /dev/null 2>&1; then
   exit 1
 fi
 
-# Mostrar log de xdpyinfo por si hace falta
 echo "📋 xdpyinfo:"
 cat "$LOG_DIR/xdpyinfo.log"
 
@@ -158,11 +157,9 @@ echo "   👉 http://<IP-de-la-máquina>:8080/vnc.html"
 echo ""
 echo "📦 Contenedor se mantendrá activo. Logs vivos en $LOG_DIR"
 
-# Esperar a que mueran los procesos principales
-#wait $CHROME_PID
-
-# Esperar indefinidamente para mantener vivo el contenedor
+# Mantener contenedor vivo para debug
 tail -f /dev/null
+
 ```
 
 ---
@@ -185,6 +182,7 @@ while true; do
   echo "Chromium terminó. Reiniciando en 5 segundos..."
   sleep 5
 done
+
 ```
 
 ---
@@ -204,6 +202,7 @@ done
 
 echo "Display $DISPLAY disponible. Iniciando x11vnc..."
 x11vnc -display $DISPLAY -nopw -forever -shared -rfbport 5900
+
 ```
 
 ---
@@ -211,9 +210,10 @@ x11vnc -display $DISPLAY -nopw -forever -shared -rfbport 5900
 ## 🧪 Cómo construir y ejecutar
 
 ```bash
-podman build -t kiosk-youtube .
+podman build -t youtube-kiosk .
 
-podman run --rm -d --privileged --user 0 -p 5901:5900 -p 8080:8080 kiosk-youtube
+podman run -d --rm --privileged --user 0 -p 8080:8080 youtube-kiosk
+
 ```
 
 ---
