@@ -69,6 +69,8 @@ RUN dnf install -y \
     alsa-lib \
     wget \
     tar \
+    xdpyinfo \
+    fluxbox \
     && dnf clean all
 
 # Clonar noVNC y websockify antes de cambiar usuario
@@ -83,6 +85,8 @@ RUN chown usuario:usuario /home/usuario/*.sh && chmod +x /home/usuario/*.sh
 USER usuario
 WORKDIR /home/usuario
 
+ENV DISPLAY=:0
+
 CMD ["./start.sh"]
 ```
 
@@ -93,22 +97,72 @@ CMD ["./start.sh"]
 ```bash
 #!/bin/bash
 
-Xvfb :0 -screen 0 1920x1080x24 &
+LOG_DIR="/tmp/kiosk-logs"
+mkdir -p "$LOG_DIR"
+echo "📁 Logs guardados en $LOG_DIR"
+
+echo "🚀 Lanzando Xvfb en DISPLAY=:0"
+Xvfb :0 -screen 0 1920x1080x24 > "$LOG_DIR/xvfb.log" 2>&1 &
+XVFB_PID=$!
+echo "🔧 Xvfb PID: $XVFB_PID"
+
 export DISPLAY=:0
 
-./x11vnc.sh &
+# Esperar hasta 10 segundos a que el DISPLAY esté disponible
+for i in {1..10}; do
+  if xdpyinfo -display $DISPLAY > "$LOG_DIR/xdpyinfo.log" 2>&1; then
+    echo "✅ Xvfb activo en DISPLAY=$DISPLAY"
+    break
+  else
+    echo "⏳ Esperando a que el display $DISPLAY esté disponible... ($i)"
+    sleep 1
+  fi
+done
 
-sleep 5
+# Si después del loop no está disponible, abortar
+if ! xdpyinfo -display $DISPLAY > /dev/null 2>&1; then
+  echo "❌ ERROR: El display $DISPLAY no está disponible después de 10 segundos."
+  echo "📝 Contenido de $LOG_DIR/xvfb.log:"
+  cat "$LOG_DIR/xvfb.log"
+  exit 1
+fi
 
-/opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 8080 &
+# Mostrar log de xdpyinfo por si hace falta
+echo "📋 xdpyinfo:"
+cat "$LOG_DIR/xdpyinfo.log"
+
+echo "🚀 Iniciando x11vnc"
+./x11vnc.sh > "$LOG_DIR/x11vnc.log" 2>&1 &
+X11VNC_PID=$!
+echo "🔧 x11vnc PID: $X11VNC_PID"
+
+echo "🌐 Lanzando noVNC en puerto 8080"
+nohup /opt/noVNC/utils/novnc_proxy --vnc localhost:5900 --listen 8080 > "$LOG_DIR/novnc.log" 2>&1 &
+NOVNC_PID=$!
+echo "🔧 noVNC PID: $NOVNC_PID"
 
 sleep 3
 
-./watch_once.sh
+echo "🎥 Lanzando Chromium vía watch_once.sh"
+./watch_once.sh > "$LOG_DIR/chromium.log" 2>&1 &
+CHROME_PID=$!
+echo "🔧 Chromium PID: $CHROME_PID"
 
-sleep 300
+echo ""
+echo "📊 Procesos activos:"
+ps -ef | grep -E "Xvfb|x11vnc|chromium|novnc" | grep -v grep
 
-exec "$0"
+echo ""
+echo "📡 Kiosk corriendo. Accedé desde tu navegador a:"
+echo "   👉 http://<IP-de-la-máquina>:8080/vnc.html"
+echo ""
+echo "📦 Contenedor se mantendrá activo. Logs vivos en $LOG_DIR"
+
+# Esperar a que mueran los procesos principales
+#wait $CHROME_PID
+
+# Esperar indefinidamente para mantener vivo el contenedor
+tail -f /dev/null
 ```
 
 ---
@@ -131,7 +185,6 @@ while true; do
   echo "Chromium terminó. Reiniciando en 5 segundos..."
   sleep 5
 done
-
 ```
 
 ---
@@ -141,7 +194,16 @@ done
 ```bash
 #!/bin/bash
 
-x11vnc -display :99 -nopw -forever -shared
+export DISPLAY=:0
+
+# Esperar a que el display esté disponible antes de lanzar x11vnc
+while ! xdpyinfo -display $DISPLAY &>/dev/null; do
+  echo "Esperando a que el display $DISPLAY esté disponible..."
+  sleep 1
+done
+
+echo "Display $DISPLAY disponible. Iniciando x11vnc..."
+x11vnc -display $DISPLAY -nopw -forever -shared -rfbport 5900
 ```
 
 ---
@@ -149,9 +211,9 @@ x11vnc -display :99 -nopw -forever -shared
 ## 🧪 Cómo construir y ejecutar
 
 ```bash
-podman build -t youtube-kiosk .
+podman build -t kiosk-youtube .
 
-podman run -d --name youtube_kiosk -it --net=host youtube-kiosk
+podman run --rm -d --privileged --user 0 -p 5901:5900 -p 8080:8080 kiosk-youtube
 ```
 
 ---
