@@ -237,69 +237,8 @@ podman rm youtube_kiosk
 
 ---
 
-NOTA: El contenedor como esta configurado siempre va a estar funcionando, no necesita reiniciar ni nada... el playlist termina... se espera 5 segundos... y vuelve a correr
-=
 
-
-## 🔁 Ejecutar el contenedor cada 30 minutos (suponiendo que por algun motivo deseamos reiniciarlo cada 30 minutos)
-
-Primero asegurar que el contenedor no esta levantado
-```
-podman container list
-```
-
-Nos aseguramos que crone esta instalado y activo 
-
-```
-dnf install cronie -y
-systemctl enable crond --now
-```
-
-Para asegurar que no este levantado y solo creado
-
-```
-podman ps -q | xargs -r podman stop
-podman rm -a -f
-podman container prune
-podman rmi --all --force
-
-podman build -t youtube-kiosk .
-
-podman create --name youtube_kiosk --net host -e DISPLAY=:0 -p 8080:8080  localhost/youtube-kiosk
-```
-
-Luego, ya podés usar `cron` en el host para iniciar el contenedor así:
-
-```
-crontab -e
-```
-
-Agregar esta linea 
-
-```cron
-# Iniciar el contenedor a los minutos 00, y 30 de cada hora
-00,30 * * * * /usr/bin/podman start youtube_kiosk
-
-# Detener el contenedor a los minutos 27 y 57
-57,27 * * * * /usr/bin/podman stop youtube_kiosk
-58,28 * * * * /usr/bin/podman rm -a -f
-59,29 * * * * /usr/bin/podman create --name youtube_kiosk --net host -e DISPLAY=:0 -p 8080:8080  localhost/youtube-kiosk
-
-```
-
-Esto lo arranca en los minutos 00, 15, 30, 45 y lo apaga en 05, 20, 35, 50 respectivamente.
-
----
-
-Para validar si el cron ha sido ejecutado
-
-```
-journalctl -u crond
-
-```
-
-
-Matar todos los contenedores 
+## :bomb: Detener y elimnar todo 
 
 ```
 podman ps -q | xargs -r podman stop
