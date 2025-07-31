@@ -186,14 +186,14 @@ tail -f /dev/null
 
 export DISPLAY=:0
 
-URL="https://www.youtube.com/embed/videoseries?list=PLBrdJqPHEZjuuzjTs7pZ_mnDagZHgqTfG&autoplay=1&mute=1&loop=1&playlist=AWFPhBKeea4,W7nXhghwvQ4,t_VsTw0Sj5o"
+URL="https://www.youtube.com/playlist?list=PLBrdJqPHEZjuuzjTs7pZ_mnDagZHgqTfG"
 
 while true; do
   echo "Iniciando Chromium en modo kiosko..."
   chromium-browser --no-sandbox --disable-gpu --disable-software-rasterizer \
     --autoplay-policy=no-user-gesture-required \
     --disable-features=MediaSessionService \
-    --window-size=1920,1080 --start-fullscreen --kiosk "$URL"
+    --window-size=1024, 768 --start-fullscreen --kiosk "$URL"
   echo "Chromium terminó. Reiniciando en 5 segundos..."
   sleep 5
 done
