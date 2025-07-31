@@ -193,7 +193,7 @@ while true; do
   chromium-browser --no-sandbox --disable-gpu --disable-software-rasterizer \
     --autoplay-policy=no-user-gesture-required \
     --disable-features=MediaSessionService \
-    --window-size=1024, 768 --start-fullscreen --kiosk "$URL"
+    --window-size=1024,768 --start-fullscreen --kiosk "$URL"
   echo "Chromium terminó. Reiniciando en 5 segundos..."
   sleep 5
 done
