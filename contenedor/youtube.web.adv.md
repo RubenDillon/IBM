@@ -52,6 +52,7 @@ ls -ld /run/user/$(id -u)
 
 ## 📄 Dockerfile
 
+```
 FROM fedora:40
 
 RUN dnf install -y \
