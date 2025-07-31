@@ -173,7 +173,7 @@ tail -f /dev/null
 
 export DISPLAY=:0
 
-URL="https://www.youtube.com/embed/videoseries?list=PLBrdJqPHEZjuuzjTs7pZ_mnDagZHgqTfG&autoplay=1&mute=1&loop=1&playlist=AWFPhBKeea4,W7nXhghwvQ4,t_VsTw0Sj5o"
+URL="https://www.youtube.com/playlist?list=PLBrdJqPHEZjuOJy73dIKmvmQB8VwNpGCs"
 
 while true; do
   echo "Iniciando Chromium en modo kiosko..."
