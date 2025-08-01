@@ -262,6 +262,11 @@ echo "🛠️ Iniciando simulador de aleatorio + siguiente (cada 10–25 min)"
 
     echo "$(date '+%Y-%m-%d %H:%M:%S') ⏭️ Simulando 'Shift+N' (siguiente)" >> "$LOG_DIR/random_skip_simulator.log"
     xdotool key shift+n >> "$LOG_DIR/random_skip_simulator.log" 2>&1
+
+
+    echo "$(date '+%Y-%m-%d %H:%M:%S') 🔁 Click en botón de loop" >> "$LOG_DIR/random_skip_simulator.log"
+    xdotool mousemove 1830 950 click 1 >> "$LOG_DIR/random_skip_simulator.log" 2>&1
+
   done
 ) &
 SKIP_SIMULATOR_PID=$!
