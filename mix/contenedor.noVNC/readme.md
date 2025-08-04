@@ -1,4 +1,4 @@
-Contenedor con VNC
+Contenedor con noVNC
 =
 
 En esta carpeta encontraran como se puede crear un contenedor y que a traves de una pagina web, se pueda ingresar y observar que esta sucediendo.
