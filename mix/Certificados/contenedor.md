@@ -70,8 +70,8 @@ chmod +x get-cert.sh
 
 En ./certs/ vas a encontrar los siguientes archivos
 
-fullchain.pem → para SSLCertificateFile
-privkey.pem → para SSLCertificateKeyFile
+  - fullchain.pem → para SSLCertificateFile
+  - privkey.pem → para SSLCertificateKeyFile
 
 
 
